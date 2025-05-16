@@ -41,13 +41,17 @@ jobs:
       - name: Run script
         run: |
           python radmonitor_rostock.py
-      - name: Check if CSV changed
-        run: |
-          git diff --quiet df_gesamt_neu.csv || echo "CHANGED=true" >> $GITHUB_ENV
-      
-      - name: Commit and push if changed
-        if: env.CHANGED == 'true'
+
+
+      - name: Commit and push changes
         run: |
           git add df_gesamt_neu.csv
-          git commit -m "Update CSV"
-          git push
+          git status
+          
+          # Nur committen wenn es Änderungen gibt
+          if git diff --staged --quiet; then
+            echo "Keine Änderungen an der CSV-Datei"
+          else
+            git commit -m "Update CSV"
+            git push || echo "Push fehlgeschlagen - bitte Berechtigungen prüfen"
+          fi

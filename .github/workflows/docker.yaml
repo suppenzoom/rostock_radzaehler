@@ -1,46 +1,53 @@
 name: Run the Python file
 
-
 on:
- push:
-   branches: [ main ]
- pull_request:
-   branches: [ main ]
- schedule:
-   - cron: "0 9 * * *"
- jobs:
- run:
-   name: run
-   runs-on: ubuntu-22.04
-   timeout-minutes: 5
-   env:
-     ATKEY: ${{ secrets.ATKEY }}
-     ATHANDLE: ${{ secrets.ATHANDLE }}
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: "0 9 * * *"
+  
+jobs:
+  run:
+    name: run
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    env:
+      ATKEY: ${{ secrets.ATKEY }}
+      ATHANDLE: ${{ secrets.ATHANDLE }}
 
+    permissions:
+      contents: write
+      id-token: write
+      repository-projects: write
+      
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
-   permissions:
-     contents: write
-     id-token: write
-     repository-projects: write
-    
-   steps:
-     - uses: actions/checkout@v3
-     - uses: actions/setup-python@v4
-       with:
-         python-version: '3.12'
+      - name: Configure Git
+        run: |
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git config --global pull.rebase false  # Use merge strategy
 
-
-     - name: Configure Git
-       run: |
-         git config --global user.name 'GitHub Action'
-         git config --global user.email 'action@github.com'
-         git config --global pull.rebase false  # Use merge strategy
-
-
-     - run: |
-         python -VV
-         pip install -r requirements.txt
-     
-     - name: Run script
-       run: |
-         python radmonitor_rostock.py
+      - run: |
+          python -VV
+          pip install -r requirements.txt
+       
+      - name: Run script
+        run: |
+          python rostock_fahrrad.py
+      - name: Check if CSV changed
+        run: |
+          git diff --quiet df_gesamt_neu.csv || echo "CHANGED=true" >> $GITHUB_ENV
+      
+      - name: Commit and push if changed
+        if: env.CHANGED == 'true'
+        run: |
+          git add df_gesamt_neu.csv
+          git commit -m "Update CSV"
+          git push

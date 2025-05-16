@@ -11,7 +11,7 @@ response = requests.get(url, verify=True)
 df = pd.read_csv(io.StringIO(response.text))
 
 # %%
-df['zeitpunkt'] = pd.to_datetime(df['zeitpunkt'], utc= True)
+df['zeitpunkt'] = pd.to_datetime(df['zeitpunkt'], utc=True)
 # %%
 # pivot Tabelle erstellen
 df_pivot_datum = df.pivot_table(index = 'zeitpunkt', columns="standort_id", values ="summe", aggfunc="sum")

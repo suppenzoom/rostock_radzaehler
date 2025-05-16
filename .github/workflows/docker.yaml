@@ -40,7 +40,7 @@ jobs:
        
       - name: Run script
         run: |
-          python rostock_fahrrad.py
+          python radmonitor_rostock.py
       - name: Check if CSV changed
         run: |
           git diff --quiet df_gesamt_neu.csv || echo "CHANGED=true" >> $GITHUB_ENV
